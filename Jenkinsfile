@@ -18,13 +18,13 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/raslenraslen/application-pipeline.git'
             }
         }
-        stage('Compile') {
+        stage('Maven Compile') {
             steps {
                sh "mvn compile"
             }
         }
         
-        stage('Test') {
+        stage(' Maven Test') {
             steps {
                 sh "mvn test"
             }
@@ -58,6 +58,32 @@ pipeline {
                 }
             }
         }
+         stage('Build & Tag Docker Imagee') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker build -t raslenmissaoui061/raslenshackk:latest ."
+                    }
+                }
+            }
+        }
+          stage('Push Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                        sh "docker push raslenmissaoui061/raslenshackk:latest "
+                    }
+                }
+            }
+        }
+         stage(' Docker Image Scan') {
+            steps {
+               
+                sh '    trivy image --format table -o trivy-fs-report.html raslenmissaoui061/raslenshackk:latest '
+            
+           
+            }
+        }
         stage('Deploy To Kubernetes') {
             steps {
                 withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8s-token2', namespace: 'pipeline', serverUrl: 'https://192.168.100.64:6443']])  {
@@ -65,6 +91,7 @@ pipeline {
                 }
             }
         }
+         
         
         stage('Verify Deployment') {
             steps {
