@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: bankingapp
+      app: bankingappp
   replicas: 2 # Number of replicas that will be created for this deployment
   template:
     metadata:
